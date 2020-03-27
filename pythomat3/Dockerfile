@@ -1,9 +1,9 @@
 FROM alpine
 
 RUN apk update && apk upgrade && apk add \
-  python3 openjdk8
+  python3 openjdk11
 
-ENV JAVA_HOME=/usr/lib/jvm/java-1.8-openjdk
+ENV JAVA_HOME=/usr/lib/jvm/java-11-openjdk
 ENV PATH=$PATH:$JAVA_HOME/bin
 
 # COPY /chardet /
