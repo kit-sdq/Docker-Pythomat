@@ -1,13 +1,17 @@
 # Usage
-Run `praktomat/test_sample_solution.sh` providing the configuration in `praktomat/config.json` the students submission in `solution/`.
+Run `praktomat/run.sh` (simulate) or `praktomat/package.sh` (package) providing the configuration in `praktomat/config.json` the students submission in `solution/`.
 
 # Docker
-Build and run a docker image like this:
+## Build
 ```
 cd programmieren-metatutor/pythomat3
 docker build -t pythomat:3 -f usage/Dockerfile .
-docker run pythomat:3 >> out.html
-<browser> out.html
+```
+
+## Run
+```
+cd programmieren-metatutor/pythomat3/usage
+./docker.sh /path/to/solution /target/path
 ```
 
 # Dependencies
