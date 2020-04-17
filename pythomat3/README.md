@@ -4,14 +4,19 @@ Run `praktomat/run.sh` (simulate) or `praktomat/package.sh` (package) providing 
 # Docker
 ## Build
 ```
-cd programmieren-metatutor/pythomat3
-docker build -t pythomat:3 -f usage/Dockerfile .
+docker build -t pythomat:3 .
 ```
 
 ## Run
+Run with pythomat.zip and write result to /target/solution.html
+
 ```
-cd programmieren-metatutor/pythomat3/usage
-./docker.sh /path/to/solution /target/path
+./docker.sh /path/to/pythomat.zip /solution/ /target/
+```
+
+## Compose
+```
+docker-compose run pythomat
 ```
 
 # Dependencies
