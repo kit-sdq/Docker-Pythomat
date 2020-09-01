@@ -6,4 +6,4 @@ ENV JAVA_HOME=/usr/lib/jvm/java-11-openjdk
 ENV PATH=$PATH:$JAVA_HOME/bin
 
 WORKDIR /prod/
-CMD python3 pythomat.zip solution/ -o target/solution.html
+CMD ./run.py

@@ -1,8 +1,0 @@
-version: '3'
-services:
-  pythomat:
-    build: .
-    volumes:
-      - ./praktomat/pythomat.zip:/prod/pythomat.zip
-      - ./solution/:/prod/solution/
-      - .:/prod/target/
