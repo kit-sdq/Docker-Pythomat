@@ -1,108 +1,197 @@
 #!/usr/bin/env python3
 
+import argparse
 import os
 import subprocess
-import sys
-from os import path
+from os.path import abspath
+from types import SimpleNamespace
+
+parser = argparse.ArgumentParser()
+
+parser.add_argument(
+    '--docker', type=str, default='docker',
+    help='use other command instead of `docker`'
+)
+
+parser.add_argument(
+    '--podman', action='store_const', dest='docker', const='podman',
+    help='use `podman` instead of `docker`'
+)
+
+subparsers = parser.add_subparsers()
 
 
 def build(args):
-    if not path.exists('Dockerfile'):
-        print('Missing Dockerfile')
-        exit(-1)
+    if not os.path.exists('Dockerfile'):
+        raise Exception('Missing `Dockerfile`')
 
-    if args:
-        print('Usage: ./run.py build')
-        exit(-1)
-
-    subprocess.check_call(['docker', 'build', '-t', 'pythomat:3', '.'])
+    subprocess.check_call([args.docker, 'build', '-t', 'pythomat:3', '.'])
 
 
-def recreate(_path):
-    with open(_path, 'rb') as file:
+build_parser = subparsers.add_parser(
+    'build',
+    description='Build the container image.\n\n'
+                'The image will be tagged `pythomat:3`.',
+    formatter_class=argparse.RawTextHelpFormatter
+)
+
+build_parser.set_defaults(command=build)
+
+
+def read_delete_write(path):
+    with open(path, 'rb') as file:
         content = file.read()
 
-    os.remove(_path)
+    os.remove(path)
 
-    with open(_path, 'wb') as file:
+    with open(path, 'wb') as file:
         file.write(content)
 
 
 def package(args):
-    if not path.exists('package.py'):
-        print('Missing package.py')
-        exit(-1)
+    if not os.path.exists('package.py'):
+        raise Exception('Missing `package.py`')
 
-    if len(args) not in range(1, 3):
-        print('Usage: ./run.py package PRAKTOMAT [TARGET]')
-        exit(-1)
+    pythomat = abspath(args.pythomat)
+    praktomat = abspath(args.praktomat)
+    target = abspath(args.target)
 
-    praktomat = args[0]
+    target_dir, target_file = os.path.split(target)
 
-    if len(args) == 2:
-        target = args[1]
-    else:
-        target = os.getcwd()
+    if not target_file.endswith('.zip'):
+        raise Exception('Target file must have extension `.zip`.')
 
     subprocess.check_call([
-        'docker', 'run', '-it',
-        '-v', path.abspath('package.py') + ':/prod/run.py',
-        '-v', path.abspath('../../pythomat3') + ':/prod/pythomat/',
-        '-v', path.abspath(praktomat) + ':/prod/praktomat/',
-        '-v', path.abspath(target) + ':/prod/target/',
-        'pythomat:3'
+        args.docker, 'run', '-it',
+        '-v', abspath('package.py') + ':/prod/package.py',
+        '-v', pythomat + ':/prod/pythomat/',
+        '-v', praktomat + ':/prod/praktomat/',
+        '-v', target_dir + ':/prod/target/',
+        'pythomat:3',
+        'python3', 'package.py', target_file
     ])
 
-    recreate(path.join(target, 'pythomat.zip'))
+    read_delete_write(target)
+
+
+package_parser = subparsers.add_parser(
+    'package',
+    description='Package a praktomat instance.\n\n'
+                'TARGET will be created or overwritten.\n'
+                'In the process, the file `TaskA/pythomat.zip` will be deleted.\n\n'
+                'The praktomat instance has to\n'
+                '- contain a task `TaskA/` (TODO) and\n'
+                '- be configured to only use `python3` and never `python`.\n\n'
+                'The key "pythomat" must be set to "../../pythomat" in `TaskA/config.json`.\n\n'
+                '`TaskA/test_sample_solution.py` must\n'
+                '- import `json` and not `simplejson` and\n'
+                '- call `fakeomat.run(command=\'package\', ..)`.\n\n'
+                'For an example see `example/praktomat/`.',
+    formatter_class=argparse.RawTextHelpFormatter
+)
+
+package_parser.add_argument(
+    'pythomat', type=str,
+    help='Pythomat path'
+)
+
+package_parser.add_argument(
+    'praktomat', type=str,
+    help='Praktomat instance path'
+)
+
+package_parser.add_argument(
+    '--target', type=str, default='pythomat.zip',
+    help='use other target file than pythomat.zip'
+)
+
+package_parser.set_defaults(command=package)
 
 
 def simulate(args):
-    if not path.exists('simulate.py'):
-        print('Missing simulate.py')
-        exit(-1)
+    if not os.path.exists('simulate.py'):
+        raise Exception('Missing `simulate.py`.')
 
-    if len(args) not in range(2, 4):
-        print('Usage: ./run.py simulate PYTHOMAT SOLUTION [TARGET]')
-        exit(-1)
-
-    pythomat = args[0]
-    solution = args[1]
-
-    if len(args) == 3:
-        target = args[2]
+    if args.pythomat and args.praktomat:
+        package_target = abspath('pythomat.temp.zip')
+        package_args = SimpleNamespace()
+        package_args.docker = args.docker
+        package_args.pythomat = args.pythomat
+        package_args.praktomat = args.praktomat
+        package_args.target = package_target
+        package(package_args)
+        packaged = package_target
+    elif args.packaged:
+        package_target = None
+        packaged = abspath(args.packaged)
     else:
-        target = os.getcwd()
+        raise Exception('Specify either PACKAGED or both PYTHOMAT and PRAKTOMAT.')
+
+    solution = abspath(args.solution)
+    target = abspath(args.target)
+
+    target_dir, target_file = os.path.split(target)
+
+    if not target_file.endswith('.html'):
+        raise Exception('Target file must have extension `.html`.')
 
     subprocess.check_call([
-        'docker', 'run', '-it',
-        '-v', path.abspath('simulate.py') + ':/prod/run.py',
-        '-v', path.abspath(pythomat) + ':/prod/pythomat.zip',
-        '-v', path.abspath(solution) + ':/prod/solution/',
-        '-v', path.abspath(target) + ':/prod/target/',
-        'pythomat:3'
+        args.docker, 'run', '-it',
+        '-v', abspath('simulate.py') + ':/prod/simulate.py',
+        '-v', packaged + ':/prod/pythomat.zip',
+        '-v', solution + ':/prod/solution/',
+        '-v', target_dir + ':/prod/target/',
+        'pythomat:3',
+        'python3', 'simulate.py', target_file
     ])
 
-    recreate(path.join(target, 'out.html'))
+    if package_target:
+        os.remove(package_target)
+
+    read_delete_write(target)
 
 
-def main(args):
-    if not args:
-        print('Usage: ./run.py build | package | simulate')
-        exit(-1)
-    else:
-        command = args[0]
-        args = args[1:]
+simulate_parser = subparsers.add_parser(
+    'simulate',
+    description='Simulate a packaged Praktomat instance.\n\n'
+                'Specify either PACKAGED or both PYTHOMAT and PRAKTOMAT to package temporarily.\n\n'
+                'TARGET will be created or overwritten.\n\n'
+                'For an example solution see `example/solution/`.',
+    formatter_class=argparse.RawTextHelpFormatter
+)
 
-        if command == 'build':
-            build(args)
-        elif command == 'simulate':
-            simulate(args)
-        elif command == 'package':
-            package(args)
-        else:
-            print('Unknown command:', command)
-            exit(-1)
+simulate_parser.add_argument(
+    '--packaged', type=str, default=None,
+    help='Packaged Pythomat (`pythomat.zip`) path'
+)
+
+simulate_parser.add_argument(
+    '--pythomat', type=str, default=None,
+    help='Pythomat path'
+)
+
+simulate_parser.add_argument(
+    '--praktomat', type=str, default=None,
+    help='Praktomat instance path'
+)
+
+simulate_parser.add_argument(
+    'solution', type=str,
+    help='Solution path'
+)
+
+simulate_parser.add_argument(
+    '--target', type=str, default='out.html',
+    help='use other target file than `out.html`'
+)
+
+simulate_parser.set_defaults(command=simulate)
+
+
+def main():
+    args = parser.parse_args()
+    args.command(args)
 
 
 if __name__ == '__main__':
-    main(sys.argv[1:])
+    main()

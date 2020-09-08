@@ -1,5 +1,6 @@
-#!/usr/bin/env python3
-
 import subprocess
+import sys
 
-subprocess.check_call(['python3', 'pythomat.zip', 'solution/', '-o', 'target/out.html'])
+targetFile = sys.argv[1]
+
+subprocess.check_call(['python3', 'pythomat.zip', 'solution/', '-o', 'target/' + targetFile])

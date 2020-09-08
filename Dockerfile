@@ -6,4 +6,3 @@ ENV JAVA_HOME=/usr/lib/jvm/java-11-openjdk
 ENV PATH=$PATH:$JAVA_HOME/bin
 
 WORKDIR /prod/
-CMD ./run.py
