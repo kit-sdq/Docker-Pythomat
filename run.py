@@ -63,7 +63,7 @@ def package(args):
         raise Exception('Target file must have extension `.zip`.')
 
     subprocess.check_call([
-        args.docker, 'run', '-it',
+        args.docker, 'run', '-it', '--rm',
         '-v', abspath('package.py') + ':/prod/package.py',
         '-v', pythomat + ':/prod/pythomat/',
         '-v', praktomat + ':/prod/praktomat/',
@@ -143,7 +143,7 @@ def simulate(args):
         raise Exception('Target file must have extension `.html`.')
 
     subprocess.check_call([
-        args.docker, 'run', '-it',
+        args.docker, 'run', '-it', '--rm',
         '-v', abspath('simulate.py') + ':/prod/simulate.py',
         '-v', packaged + ':/prod/pythomat.zip',
         '-v', solution + ':/prod/solution/',
