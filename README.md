@@ -3,7 +3,7 @@ For a quick test run:
 ```shell script
 python3 run.py build
 python3 run.py package /path/to/pythomat/ example/praktomat/
-python3 run.py simulate pythomat.zip example/solution/
+python3 run.py simulate --packaged pythomat.zip example/solution/
 ```
 
 Call `--help` on `run.py` or one of its subcommands for extended help.
