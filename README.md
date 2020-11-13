@@ -4,7 +4,7 @@ For a quick test run
 
 ```shell script
 python3 run.py build
-python3 run.py package /path/to/pythomat/ example/praktomat/ TaskA/
+python3 run.py package /path/to/pythomat/ example/praktomat/TaskA/
 python3 run.py simulate --packaged pythomat.zip example/solution/
 ```
 
@@ -13,8 +13,7 @@ For testing run
 ```shell script
 python3 run.py simulate \
   --pythomat /path/to/pythomat/ \
-  --praktomat example/praktomat/ \
-  --task TaskA/ \
+  --praktomat example/praktomat/TaskA/ \
   example/solution/
 ```
 
@@ -47,7 +46,7 @@ For an example see `example/praktomat/`.
 
 Simulate a packaged Praktomat instance.
 
-Specify either `PACKAGED` or `PYTHOMAT`, `PRAKTOMAT` and `TASK` to package temporarily.
+Specify either `PACKAGED` or `PYTHOMAT` and `PRAKTOMAT` to package temporarily.
 
 `TARGET` will be created or overwritten.
 

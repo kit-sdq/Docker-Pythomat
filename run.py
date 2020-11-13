@@ -53,10 +53,11 @@ def package(args):
         raise Exception('Missing `package.py`')
 
     pythomat = abspath(args.pythomat)
-    praktomat = abspath(args.praktomat)
-    task = args.task
-    target = abspath(args.target)
 
+    praktomat = abspath(args.praktomat)
+    praktomat_path, task_path = os.path.split(praktomat)
+
+    target = abspath(args.target)
     target_dir, target_file = os.path.split(target)
 
     if not target_file.endswith('.zip'):
@@ -66,10 +67,10 @@ def package(args):
         args.docker, 'run', '-it', '--rm',
         '-v', abspath('package.py') + ':/prod/package.py',
         '-v', pythomat + ':/prod/pythomat/',
-        '-v', praktomat + ':/prod/praktomat/',
+        '-v', praktomat_path + ':/prod/praktomat/',
         '-v', target_dir + ':/prod/target/',
         'pythomat:3',
-        'python3', 'package.py', task, target_file
+        'python3', 'package.py', task_path, target_file
     ])
 
     read_delete_write(target)
@@ -80,9 +81,7 @@ package_parser = subparsers.add_parser(
     description='Package a praktomat instance.\n\n'
                 'TARGET will be created or overwritten.\n'
                 'In the process, the file `TaskA/pythomat.zip` will be deleted.\n\n'
-                'The praktomat instance has to\n'
-                '- contain a task `TaskA/` (TODO) and\n'
-                '- be configured to only use `python3` and never `python`.\n\n'
+                'The praktomat instance has to be configured to only use `python3` and never `python`.\n\n'
                 'The key "pythomat" must be set to "../../pythomat" in `TaskA/config.json`.\n\n'
                 '`TaskA/test_sample_solution.py` must\n'
                 '- import `json` and not `simplejson` and\n'
@@ -102,11 +101,6 @@ package_parser.add_argument(
 )
 
 package_parser.add_argument(
-    'task', type=str,
-    help='Praktomat task'
-)
-
-package_parser.add_argument(
     '--target', type=str, default='pythomat.zip',
     help='use other target file than pythomat.zip'
 )
@@ -118,13 +112,12 @@ def simulate(args):
     if not os.path.exists('simulate.py'):
         raise Exception('Missing `simulate.py`.')
 
-    if args.pythomat and args.praktomat and args.task:
+    if args.pythomat and args.praktomat:
         package_target = abspath('pythomat.temp.zip')
         package_args = SimpleNamespace()
         package_args.docker = args.docker
         package_args.pythomat = args.pythomat
         package_args.praktomat = args.praktomat
-        package_args.task = args.task
         package_args.target = package_target
         package(package_args)
         packaged = package_target
@@ -132,7 +125,7 @@ def simulate(args):
         package_target = None
         packaged = abspath(args.packaged)
     else:
-        raise Exception('Specify either PACKAGED or PYTHOMAT, PRAKTOMAT and TASK.')
+        raise Exception('Specify either PACKAGED or PYTHOMAT and PRAKTOMAT.')
 
     solution = abspath(args.solution)
     target = abspath(args.target)
@@ -161,7 +154,7 @@ def simulate(args):
 simulate_parser = subparsers.add_parser(
     'simulate',
     description='Simulate a packaged Praktomat instance.\n\n'
-                'Specify either PACKAGED or PYTHOMAT, PRAKTOMAT and TASK to package temporarily.\n\n'
+                'Specify either PACKAGED or PYTHOMAT and PRAKTOMAT to package temporarily.\n\n'
                 'TARGET will be created or overwritten.\n\n'
                 'For an example solution see `example/solution/`.',
     formatter_class=argparse.RawTextHelpFormatter
@@ -180,11 +173,6 @@ simulate_parser.add_argument(
 simulate_parser.add_argument(
     '--praktomat', type=str, default=None,
     help='Praktomat instance path'
-)
-
-simulate_parser.add_argument(
-    '--task', type=str, default=None,
-    help='Praktomat task'
 )
 
 simulate_parser.add_argument(
