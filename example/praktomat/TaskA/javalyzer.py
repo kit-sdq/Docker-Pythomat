@@ -31,12 +31,13 @@ imports = [
     ['accept', "java.util.regex.*"],
     ['accept', "java.util.function"],
     ['accept', "java.util.function.*"],
+    ['accept', "edu.kit.informatik.*"],
     ['reject', '*']
 ]
 
 classes = [
     ['reject', "edu.kit.informatik.Terminal", "Please don't upload the Terminal class."],
-    ['reject', "*Terminal", "Please don't upload the Terminal class and leave it in edu.kit.informatik."],
+    ['reject', "Terminal", "Please don't upload the Terminal class and leave it in edu.kit.informatik."],
     ['accept', "*.*"],
     ['reject', "*", "Please do not use the default package."]
 ]
@@ -51,7 +52,8 @@ success = javalyzer.run(
         packages=packages,
         imports=imports,
         classes=classes,
-        methods=methods
+        methods=methods,
+        jars=['checkstyle-teaching-1.0.jar']
 )
 
 sys.exit(0 if success else 1)
